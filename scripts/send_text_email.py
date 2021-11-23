@@ -13,29 +13,49 @@ V1.0.0: Simple script to send automatic text emails via smtp.  We'll eventually 
 # import libraries
 import os
 import sys
+import smtplib
 from configparser import ConfigParser
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
-import smtplib
+from typing import Union
 
 
-def generate_message_text(default_message=True, add_trademark=True, add_signature=None):
+def load_date(file):
+    # The data should be stored as a pickled dict
+    pass
+
+
+def get_auto_data(file_name: str):
+    # Load the dataset
+    personas = load_data(file_name)
+
+
+def generate_message_text(default_message: bool = True, add_trademark: bool = True, add_signature: bool = False) -> str:
     # TODO: implement this more completely. For now this will return only a default message
     message = None
+    signature = None
+    name = None
+
     if default_message:
         # message = u"""EAT IT! EAT IT GOOD!"""
-        message = u"""YOU ARE OVERDUE FOR NIPPLE INSPECTION"""
-    if add_trademark and message is not None:
+        message = u""""""
+    else:
+        # message, name, signature = get_auto_data(file_name=file_name)
+        pass
+
+    if add_trademark:
         message = message + u"""\n\n\nemail auto-generated using latest inspector-tech\u2122 application"""
-    if add_signature and message is not None:
-        message = message + u"""\n\n\nkransekake -- director of nipple inspection"""
+    if add_signature and signature is None:
+        message = message + u"""\n\n\nthe new password is LOOOOOOOOOAAAAAAAMMM -- director of nipple inspection\n\n\n"""
+    if add_signature and signature is not None:
+        message = message + u"""\n\n\n{0} -- {1}""".format(signature, name)
 
     return message
 
 
-def get_smtp_str(addrs):
+def get_smtp_str(addrs: str) -> str:
     """
 
     :param addrs:
@@ -51,22 +71,20 @@ def get_smtp_str(addrs):
         raise ValueError('Email provider not support. Currently support providers are: gmail, outlook, yahoo')
 
 
-def run(from_addrs: str, to_addrs: str, from_password: str, port: str, subject: str):
-    """
-
-    :param from_addrs:
-    :param to_addrs:
-    :param from_password:
-    :param port:
-    :return:
-    """
+def run(from_addrs: str, to_addrs: str, from_password: str, port: str, subject: str, image_path: str = None) -> bool:
     # TODO: We need to implement this to auto-generate messages and helpful hints.
     # We can create an inspector class and give each one an instance.
-    message = generate_message_text(default_message=True, add_trademark=True, add_signature='director_of_nipple_inspection')
+    message = generate_message_text(default_message=True, add_trademark=True, add_signature=True)
     msg = MIMEMultipart()
     msg['Subject'] = subject
     msg['To'] = to_addrs
     msg['From'] = from_addrs
+
+    # TODO: This defaults to adding the image first. We might want to customize the positioning
+    if image_path is not None:
+        img_data = open(image_path, 'rb').read()
+        msg.attach(MIMEImage(img_data, name=os.path.basename(image_path)))
+
     msg.attach(MIMEText(message))
 
     # setup smtp
@@ -88,6 +106,8 @@ def run(from_addrs: str, to_addrs: str, from_password: str, port: str, subject: 
 
     # Login
     login_ = smtp.login(user=from_addrs, password=from_password)
+    if login_[0] != 235:
+        raise ConnectionRefusedError("Could not login to {0}. Check credentials.".format(from_addrs))
 
     # send message
     smtp.sendmail(from_addr=from_addrs, to_addrs=to_addrs, msg=msg.as_string())
@@ -102,7 +122,9 @@ def run(from_addrs: str, to_addrs: str, from_password: str, port: str, subject: 
 
 if __name__ == '__main__':
     send_to = 'mary.vanakin@gmail.com'
-    subject = 'CORRECTION: ATTENTION: INSPECTION OVERDUE'
+    # send_to = 'okeeffed090@gmail.com'
+    subject = 'AN IMPORTANT MESSAGE FROM THE COUNCIL'
+    image_path = '../../data/eat_it_text_gif/a_message_from_the_executive_director_of_nipple_inspection.gif'
     config_path = "../../data/config.ini"
     parser = ConfigParser()
     parser.read(config_path)
@@ -110,7 +132,7 @@ if __name__ == '__main__':
     password = parser.get('inspector', 'password')
     port = parser.get('inspector', 'port')
     # TODO: add support for other email attachment types, including audio, images, docs, etc. gifs :)
-    result_ = run(from_addrs=email_address, to_addrs=send_to, from_password=password, port=port, subject=subject)
+    result_ = run(from_addrs=email_address, to_addrs=send_to, from_password=password, port=port, subject=subject, image_path=image_path)
     if result_:
         print('Process complete')
 
