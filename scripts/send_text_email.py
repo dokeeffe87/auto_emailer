@@ -32,25 +32,25 @@ def get_auto_data(file_name: str):
     personas = load_data(file_name)
 
 
-def generate_message_text(default_message: bool = True, add_trademark: bool = True, add_signature: bool = False) -> str:
+def generate_message_text(default_message: bool = False, add_trademark: bool = True, add_signature: bool = False, update_password: str = None) -> str:
     # TODO: implement this more completely. For now this will return only a default message
-    message = None
     signature = None
     name = None
-
+    message = u""""""
     if default_message:
-        # message = u"""EAT IT! EAT IT GOOD!"""
-        message = u""""""
-    else:
-        # message, name, signature = get_auto_data(file_name=file_name)
-        pass
+        message = message + u"""EAT IT! EAT IT GOOD!"""
+
+    if update_password is not None:
+        message = message + u"""\n\n\nThe new password is {0}\n\n\n""".format(update_password)
+
+    if add_signature and signature is None:
+        message = message + u"""\n\n\n-- Director of nipple inspection\n\n\n"""
+
+    if add_signature and signature is not None:
+        message = message + u"""\n\n\n{0} -- {1}""".format(signature, name)
 
     if add_trademark:
         message = message + u"""\n\n\nemail auto-generated using latest inspector-tech\u2122 application"""
-    if add_signature and signature is None:
-        message = message + u"""\n\n\nthe new password is LOOOOOOOOOAAAAAAAMMM -- director of nipple inspection\n\n\n"""
-    if add_signature and signature is not None:
-        message = message + u"""\n\n\n{0} -- {1}""".format(signature, name)
 
     return message
 
@@ -71,10 +71,10 @@ def get_smtp_str(addrs: str) -> str:
         raise ValueError('Email provider not support. Currently support providers are: gmail, outlook, yahoo')
 
 
-def run(from_addrs: str, to_addrs: str, from_password: str, port: str, subject: str, image_path: str = None) -> bool:
+def run(from_addrs: str, to_addrs: str, from_password: str, port: str, subject: str, image_path: str = None, update_password: str = None) -> bool:
     # TODO: We need to implement this to auto-generate messages and helpful hints.
     # We can create an inspector class and give each one an instance.
-    message = generate_message_text(default_message=True, add_trademark=True, add_signature=True)
+    message = generate_message_text(default_message=False, add_trademark=True, add_signature=True, update_password=update_password)
     msg = MIMEMultipart()
     msg['Subject'] = subject
     msg['To'] = to_addrs
@@ -121,10 +121,11 @@ def run(from_addrs: str, to_addrs: str, from_password: str, port: str, subject: 
 
 
 if __name__ == '__main__':
-    send_to = 'mary.vanakin@gmail.com'
-    # send_to = 'okeeffed090@gmail.com'
+    # send_to = 'mary.vanakin@gmail.com'
+    send_to = 'okeeffed090@gmail.com'
     subject = 'AN IMPORTANT MESSAGE FROM THE COUNCIL'
-    image_path = '../../data/eat_it_text_gif/a_message_from_the_executive_director_of_nipple_inspection.gif'
+    new_password = 'PAAAACHO'
+    image_path = '../../data/pacho/image_capturegenerated_gif.gif'
     config_path = "../../data/config.ini"
     parser = ConfigParser()
     parser.read(config_path)
@@ -132,7 +133,7 @@ if __name__ == '__main__':
     password = parser.get('inspector', 'password')
     port = parser.get('inspector', 'port')
     # TODO: add support for other email attachment types, including audio, images, docs, etc. gifs :)
-    result_ = run(from_addrs=email_address, to_addrs=send_to, from_password=password, port=port, subject=subject, image_path=image_path)
+    result_ = run(from_addrs=email_address, to_addrs=send_to, from_password=password, port=port, subject=subject, image_path=image_path, update_password=new_password)
     if result_:
         print('Process complete')
 
