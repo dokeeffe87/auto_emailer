@@ -200,7 +200,7 @@ def run(out_path: str, annot: str = None, resize: bool = False) -> bool:
 
 
 if __name__ == '__main__':
-    # Run script here.  We'll want to add options for adding text, as well as image compression
+    # Run script here.
     path_to_save = '../../data/saved_gif_'
     annotation = 'PAAAACHO'
     # annotation = None
