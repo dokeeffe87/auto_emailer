@@ -29,6 +29,7 @@ def load_date(file):
 
 def get_auto_data(file_name: str):
     # Load the dataset
+    # TODO: implement this
     personas = load_data(file_name)
 
 
@@ -57,10 +58,12 @@ def generate_message_text(default_message: bool = False, add_trademark: bool = T
 
 def get_smtp_str(addrs: str) -> str:
     """
+    The the correct smtp name given an input email address.  So far this only supports gmail, outlook, and yahoo.
 
-    :param addrs:
-    :return:
+    :param addrs: Str. The email address to you want to send a message to
+    :return: The smtp name for the input email address. If the smtp is not supported, a value error is raised
     """
+
     if 'gmail' in addrs:
         return 'smtp.gmail.com'
     elif 'outlook' in addrs:
